@@ -114,12 +114,6 @@
     .delete-btn:hover {
       background: #dc2626;
     }
-
-    @media (max-width: 480px) {
-      .app {
-        padding: 16px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -149,13 +143,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
+    /* ===== Supabase Config ===== */
     const SUPABASE_URL = "https://jcuvklwfhskkbjrhnqxh.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjdXZrbHdmaHNra2JqcmhucXhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3ODE1MjEsImV4cCI6MjA4MTM1NzUyMX0.bvSDRsGtdghIa6jLM1Ai61DHy6hbtVzzx6Y5LHxYipc";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
 
-     const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+    /* ===== Elements ===== */
     const loginDiv = document.getElementById("login");
     const mainDiv = document.getElementById("main");
     const usernameInput = document.getElementById("usernameInput");
@@ -169,6 +166,7 @@
 
     let currentUser = localStorage.getItem("username") || "";
 
+    /* ===== Functions ===== */
     function showApp() {
       loginDiv.classList.add("hidden");
       mainDiv.classList.remove("hidden");
@@ -176,9 +174,7 @@
       loadNotes();
     }
 
-    if (currentUser) {
-      showApp();
-    }
+    if (currentUser) showApp();
 
     loginBtn.onclick = () => {
       const name = usernameInput.value.trim();
@@ -189,7 +185,7 @@
     };
 
     async function loadNotes() {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from("notes")
         .select("*")
         .eq("user_name", currentUser)
@@ -234,9 +230,9 @@
       const content = noteInput.value.trim();
       if (!content) return;
 
-      await supabase.from("notes").insert({
+      await supabaseClient.from("notes").insert({
         user_name: currentUser,
-        content: content
+        content
       });
 
       noteInput.value = "";
@@ -247,7 +243,7 @@
       const newContent = prompt("عدل الملاحظة:", note.content);
       if (!newContent) return;
 
-      await supabase
+      await supabaseClient
         .from("notes")
         .update({ content: newContent })
         .eq("id", note.id);
@@ -258,7 +254,7 @@
     async function deleteNote(id) {
       if (!confirm("هل أنت متأكد من حذف الملاحظة؟")) return;
 
-      await supabase
+      await supabaseClient
         .from("notes")
         .delete()
         .eq("id", id);
